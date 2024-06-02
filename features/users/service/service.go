@@ -6,6 +6,12 @@ type userService struct {
 	UserRepository entity.UsersRepositoryInterface
 }
 
+func NewUserService(user entity.UsersRepositoryInterface) entity.UsersServiceInterface {
+	return &userService{
+		UserRepository: user,
+	}
+}
+
 // CreateUser implements entity.UsersServiceInterface.
 func (u *userService) CreateUser(data entity.UsersCore) (entity.UsersCore, error) {
 	panic("unimplemented")
@@ -34,10 +40,4 @@ func (u *userService) Login(email string, password string) (entity.UsersCore, st
 // UpdateUser implements entity.UsersServiceInterface.
 func (u *userService) UpdateUser(id string, data entity.UsersCore) error {
 	panic("unimplemented")
-}
-
-func NewUserService(user entity.UsersRepositoryInterface) entity.UsersServiceInterface {
-	return &userService{
-		UserRepository: user,
-	}
 }

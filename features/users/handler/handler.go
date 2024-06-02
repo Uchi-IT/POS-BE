@@ -32,6 +32,6 @@ func (user *userHandler) UpdateUser(e echo.Context) error {
 	return nil
 }
 
-func (user *userHandler) DeleteUesr(e echo.Context) error {
+func (user *userHandler) DeleteUser(e echo.Context) error {
 	return nil
 }
