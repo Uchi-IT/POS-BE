@@ -13,7 +13,7 @@ type User struct {
 	RoleId    string
 	Cabang    string
 	Role      string
-	CreatedAt time.Time      `gorm:"type:DATETIME(0)"`
-	UpdatedAt time.Time      `gorm:"type:DATETIME(0)"`
+	CreatedAt time.Time      `gorm:"type:timestamp"`
+	UpdatedAt time.Time      `gorm:"type:timestamp"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
