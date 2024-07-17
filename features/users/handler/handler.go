@@ -1,8 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
-	dto "uchiiParfume/features/users/dto"
+	handler "uchiiParfume/features/users/dto"
 	"uchiiParfume/features/users/entity"
 	middleware "uchiiParfume/utils/jwt"
 
@@ -20,8 +21,8 @@ func NewUserHandler(user entity.UsersServiceInterface) *userHandler {
 	}
 }
 
-func (handler *userHandler) CreateUser(e echo.Context) error {
-	input := new(dto.UserRequest)
+func (user *userHandler) CreateUser(e echo.Context) error {
+	input := handler.UserRequest{}
 	errBind := e.Bind(&input)
 	if errBind != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
@@ -29,34 +30,29 @@ func (handler *userHandler) CreateUser(e echo.Context) error {
 		})
 	}
 
-	data := entity.UsersCore{
-		Email:    input.Email,
-		Password: input.Password,
-		Cabang:   input.Cabang,
-	}
+	fmt.Println("input handler :")
+	fmt.Println(input)
 
-	row, errUser := handler.userService.CreateUser(data)
+	userInput := handler.UserRequestToUserCore(input)
+
+	fmt.Println("input handler sesudah mapping:")
+	fmt.Println(userInput)
+
+	_, errUser := user.userService.CreateUser(userInput)
 	if errUser != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error create user",
 			"error":   errUser.Error(),
 		})
 	}
-
-	resp := dto.UserResponse{
-		Id: row.Id,
-		Email: row.Email,
-		Cabang: row.Cabang,
-		Role: row.Role,
-	}
+	
 
 	return e.JSON(http.StatusOK, map[string]any{
 		"message": "succes create user",
-		"data":    resp,
 	})
 }
 
-func (handler *userHandler) GetAllUser(e echo.Context) error {
+func (user *userHandler) GetAllUser(e echo.Context) error {
 	_, role, err := middleware.ExtractToken(e)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
@@ -70,23 +66,14 @@ func (handler *userHandler) GetAllUser(e echo.Context) error {
 		})
 	}
 
-	data, err := handler.userService.GetAllUser()
+	data, err := user.userService.GetAllUser()
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all user",
 		})
 	}
 
-	dataList := []dto.UserResponse{}
-	for _, v := range data {
-		result := dto.UserResponse{
-			Id:     v.Id,
-			Email:  v.Email,
-			Cabang: v.Cabang,
-			Role:   v.Role,
-		}
-		dataList = append(dataList, result)
-	}
+	dataList := handler.ListUserCoreToListUserResponse(data)
 
 	return e.JSON(http.StatusOK, map[string]any{
 		"message": "get all user",
@@ -94,7 +81,7 @@ func (handler *userHandler) GetAllUser(e echo.Context) error {
 	})
 }
 
-func (handler *userHandler) GetSpecificUser(e echo.Context) error {
+func (user *userHandler) GetSpecificUser(e echo.Context) error {
 	idParamstr := e.Param("id")
 
 	idParams, err := uuid.Parse(idParamstr)
@@ -104,43 +91,34 @@ func (handler *userHandler) GetSpecificUser(e echo.Context) error {
 		})
 	}
 
-	data, err := handler.userService.GetById(idParams.String())
+	data, err := user.userService.GetById(idParams.String())
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get specific user",
 		})
 	}
 
-	response := dto.UserResponse{
-		Id:     data.Id,
-		Email:  data.Email,
-		Cabang: data.Cabang,
-		Role:   data.Role,
-	}
+	response := handler.UserCoreToUserResponse(data)
+	
 	return e.JSON(http.StatusOK, map[string]any{
 		"message": "get user",
 		"data":    response,
 	})
 }
 
-func (handler *userHandler) UpdateUser(e echo.Context) error {
+func (user *userHandler) UpdateUser(e echo.Context) error {
 	idParams := e.Param("id")
 
-	data := new(dto.UserRequest)
+	data := handler.UserRequest{}
 	if errBind := e.Bind(data); errBind != nil {
 		return e.JSON(http.StatusBadRequest, map[string]interface{}{
 			"message": "Error binding data",
 		})
 	}
 
-	userData := entity.UsersCore{
-		Id:       idParams,
-		Email:    data.Email,
-		Cabang:   data.Cabang,
-		Password: data.Password,
-	}
+	userData := handler.UserRequestToUserCore(data)
 
-	err := handler.userService.UpdateUser(idParams, userData)
+	err := user.userService.UpdateUser(idParams, userData)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]interface{}{
 			"message": "Error updating user",
@@ -154,9 +132,9 @@ func (handler *userHandler) UpdateUser(e echo.Context) error {
 	})
 }
 
-func (handler *userHandler) DeleteUser(e echo.Context) error {
+func (user *userHandler) DeleteUser(e echo.Context) error {
 	idParams := e.Param("id")
-	err := handler.userService.DeleteUser(idParams)
+	err := user.userService.DeleteUser(idParams)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]interface{}{
 			"message": "Error deleting user",
@@ -168,8 +146,8 @@ func (handler *userHandler) DeleteUser(e echo.Context) error {
 	})
 }
 
-func (handler *userHandler) Login(e echo.Context) error {
-	input := new(dto.UserRequest)
+func (user *userHandler) Login(e echo.Context) error {
+	input := new(handler.UserRequest)
 	errBind := e.Bind(&input)
 	if errBind != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
@@ -182,7 +160,7 @@ func (handler *userHandler) Login(e echo.Context) error {
 		Password: input.Password,
 	}
 
-	data, token, err := handler.userService.Login(data.Email, data.Password)
+	data, token, err := user.userService.Login(data.Email, data.Password)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error login",

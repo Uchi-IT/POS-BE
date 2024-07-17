@@ -10,11 +10,14 @@ type UsersCore struct {
 	Id        string
 	Email     string
 	Password  string
-	RoleId    string
-	Cabang    string
+	Cabang_id []string
+	Cabang    []UserCabangCore
 	Role      string
-	// Cabang_id []string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeleteAt  gorm.DeletedAt
+}
+
+type UserCabangCore struct{
+	Cabang string
 }

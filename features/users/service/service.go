@@ -72,7 +72,7 @@ func (userUC *userService) GetAllUser() ([]entity.UsersCore, error) {
 // GetById implements entity.UsersServiceInterface.
 func (userUC *userService) GetById(id string) (entity.UsersCore, error) {
 	if id == "" {
-		return entity.UsersCore{}, errors.New("event ID is required")
+		return entity.UsersCore{}, errors.New("user ID is required")
 	}
 
 	user, err := userUC.UserRepository.GetById(id)
@@ -107,9 +107,13 @@ func (userUC *userService) UpdateUser(id string, data entity.UsersCore) error {
 		return errors.New("id is not found")
 	}
 
-	_, errGet := userUC.UserRepository.GetById(id)
+	user, errGet := userUC.UserRepository.GetById(id)
 	if errGet != nil {
 		return errGet
+	}
+
+	if user.Id == ""{
+		return errors.New("user not found")
 	}
 
 	err := userUC.UserRepository.UpdateUser(id, data)

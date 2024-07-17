@@ -5,6 +5,7 @@ import "uchiiParfume/features/cabang/model"
 func CabangModelToCabangCore(cabang model.Cabang) CabangCore {
 	cabangCore := CabangCore{
 		Id:         cabang.Id,
+		Image:      cabang.Image,
 		NamaCabang: cabang.NamaCabang,
 		Alamat:     cabang.Alamat,
 	}
@@ -14,6 +15,7 @@ func CabangModelToCabangCore(cabang model.Cabang) CabangCore {
 func CabangCoreToCabangModel(cabang CabangCore) model.Cabang {
 	cabangModel := model.Cabang{
 		Id:         cabang.Id,
+		Image:      cabang.Image,
 		NamaCabang: cabang.NamaCabang,
 		Alamat:     cabang.Alamat,
 	}

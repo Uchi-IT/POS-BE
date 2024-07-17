@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	cabang "uchiiParfume/features/cabang/entity"
 	"uchiiParfume/features/users/entity"
 	"uchiiParfume/features/users/model"
 	bcrypt "uchiiParfume/utils/bcrypt"
@@ -12,12 +14,14 @@ import (
 )
 
 type userRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	cabang cabang.CabangRepositoryInterface
 }
 
-func NewUserRepository(db *gorm.DB) entity.UsersRepositoryInterface {
+func NewUserRepository(db *gorm.DB, cabang cabang.CabangRepositoryInterface) entity.UsersRepositoryInterface {
 	return &userRepository{
-		db: db,
+		db:     db,
+		cabang: cabang,
 	}
 }
 
@@ -49,30 +53,69 @@ func (userRepo *userRepository) Login(email string, password string) (entity.Use
 
 // CreateUser implements entity.UsersRepositoryInterface.
 func (userRepo *userRepository) CreateUser(data entity.UsersCore) (entity.UsersCore, error) {
+	userData := entity.UserCoreToUserModel(data)
 	newUUID, UUIDerr := uuid.NewRandom()
 	if UUIDerr != nil {
 		return entity.UsersCore{}, UUIDerr
 	}
 
-	hashPassword, err := bcrypt.HashPassword(data.Password)
-	if err != nil {
+	hashPassword, errHash := bcrypt.HashPassword(data.Password)
+	if errHash != nil {
+		return entity.UsersCore{}, errHash
+	}
+
+	userData.Id = newUUID.String()
+	userData.Password = hashPassword
+
+	txOuter := userRepo.db.Begin()
+
+	if err := txOuter.Save(&userData).Error; err != nil {
+		txOuter.Rollback()
 		return entity.UsersCore{}, err
 	}
+	fmt.Println("Data sebelum mapping : ")
+	fmt.Println(data)
 
-	var input = model.User{
-		Id:       newUUID.String(),
-		Email:    data.Email,
-		Password: hashPassword,
-		Role:     "user",
-		Cabang:   data.Cabang,
+	input := entity.UserModelToUserCore(userData)
+	fmt.Println("Input : ")
+	fmt.Println(input)
+	input.Role = "user"
+
+	for i, cabangId := range data.Cabang_id {
+		_, tx := userRepo.cabang.GetById(cabangId)
+		if tx != nil {
+			txOuter.Rollback()
+			return entity.UsersCore{}, errors.New("cabang tidak ada")
+		}
+
+		dataCabang := new(model.UserCabang)
+		dataCabang.UserID = userData.Id
+		dataCabang.CabangID = cabangId
+
+		fmt.Printf("Saving UserCabang: UserID=%s, CabangID=%s\n", dataCabang.UserID, dataCabang.CabangID)
+
+		for j := i + 1; j < len(data.Cabang_id); j++ {
+			if cabangId == data.Cabang_id[j] {
+				return entity.UsersCore{}, errors.New("error : cabang tidak boleh sama")
+			}
+		}
+		txInner := txOuter.Create(&dataCabang)
+		if txInner.Error != nil {
+			fmt.Printf("Error saving UserCabang: %v\n", txInner.Error)
+			txOuter.Rollback()
+			return entity.UsersCore{}, txInner.Error
+		}
+
 	}
 
-	erruser := userRepo.db.Save(&input)
-	if erruser.Error != nil {
-		return entity.UsersCore{}, erruser.Error
-	}
+	txOuter.Commit()
 
-	var resp = entity.UserModelToUserCore(input)
+	var resp = entity.UsersCore{
+		Id:     input.Id,
+		Email:  input.Email,
+		Role:   input.Role,
+		Cabang: input.Cabang,
+	}
 
 	return resp, nil
 }
@@ -93,7 +136,7 @@ func (userRepo *userRepository) DeleteUser(id string) error {
 func (userRepo *userRepository) GetAllUser() ([]entity.UsersCore, error) {
 	var dataUser []model.User
 
-	errData := userRepo.db.Find(&dataUser).Error
+	errData := userRepo.db.Preload("Cabang").Find(&dataUser).Error
 	if errData != nil {
 		return nil, errData
 	}
@@ -105,7 +148,7 @@ func (userRepo *userRepository) GetAllUser() ([]entity.UsersCore, error) {
 // GetById implements entity.UsersRepositoryInterface.
 func (userRepo *userRepository) GetById(id string) (entity.UsersCore, error) {
 	var data model.User
-	errData := userRepo.db.Where("id=?", id).First(&data).Error
+	errData := userRepo.db.Preload("Cabang").Where("id=?", id).First(&data).Error
 	if errData != nil {
 		return entity.UsersCore{}, errData
 	}

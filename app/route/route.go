@@ -7,7 +7,8 @@ import (
 
 func New(e *echo.Echo, db *gorm.DB) {
 
-	base := e.Group("")
+	base := e.Group("v1/api")
 
 	UserRoute(db,base)
+	CabangRoute(db,base)
 }
