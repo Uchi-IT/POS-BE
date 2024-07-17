@@ -1,6 +1,7 @@
 package entity
 
 type UsersRepositoryInterface interface {
+	Login(email, password string) (UsersCore, string, error)
 	CreateUser(data UsersCore) (UsersCore, error)
 	GetById(id string) (UsersCore, error)
 	GetAllUser() ([]UsersCore, error)
