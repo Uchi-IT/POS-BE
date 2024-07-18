@@ -26,13 +26,9 @@ func (cabangRepo *cabangRepository) CreateCabang(data entity.CabangCore) (entity
 		return entity.CabangCore{}, UUIDerr
 	}
 
-	var input = model.Cabang{
-		Id:         newUUID.String(),
-		Image:      data.Image,
-		NamaCabang: data.NamaCabang,
-		Alamat:     data.Alamat,
-	}
-
+	input := entity.CabangCoreToCabangModel(data)
+	input.Id = newUUID.String()
+	
 	errCabang := cabangRepo.db.Save(&input)
 	if errCabang.Error != nil {
 		return entity.CabangCore{}, errCabang.Error

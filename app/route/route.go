@@ -11,4 +11,5 @@ func New(e *echo.Echo, db *gorm.DB) {
 
 	UserRoute(db,base)
 	CabangRoute(db,base)
+	ProdukCabangRoute(db,base)
 }

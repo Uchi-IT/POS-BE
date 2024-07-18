@@ -45,7 +45,7 @@ func (cabangUC *cabangService) DeleteCabang(id string) error {
 
 	errDelete := cabangUC.CabangRepository.DeleteCabang(id)
 	if errDelete != nil {
-		return errors.New("can't delete user")
+		return errors.New("can't delete cabang")
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (cabangUC *cabangService) GetAllCabang() ([]entity.CabangCore, error) {
 // GetById implements entity.CabangServiceInterface.
 func (cabangUC *cabangService) GetById(id string) (entity.CabangCore, error) {
 	if id == "" {
-		return entity.CabangCore{}, errors.New("event ID is required")
+		return entity.CabangCore{}, errors.New("cabang ID is required")
 	}
 
 	cabang, err := cabangUC.CabangRepository.GetById(id)
@@ -100,5 +100,4 @@ func (cabangUC *cabangService) UpdateCabang(id string, data entity.CabangCore) e
 	}
 
 	return nil
-
 }
