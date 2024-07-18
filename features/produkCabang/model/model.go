@@ -11,14 +11,14 @@ type ProdukCabang struct {
 	Foto                string
 	NamaProduk          string
 	HargaJual           int
-	SeratusMl           int
-	DuaratusMl          int
-	DuaRatusLimaPuluhMl int
-	Manual              int
+	SeratusMl           int `gorm:"default:0"` 
+	DuaratusMl          int `gorm:"default:0"`
+	DuaRatusLimaPuluhMl int `gorm:"default:0"`
+	Manual              int `gorm:"default:0"`
 	// ProdukId string
 	// UserId string
 	// CabangId string
-	CreatedAt time.Time      `gorm:"type:DATETIME(0)"`
-	UpdatedAt time.Time      `gorm:"type:DATETIME(0)"`
+	CreatedAt time.Time      `gorm:"type:timestamp"`
+	UpdatedAt time.Time      `gorm:"type:timestamp"`
 	DeleteAt  gorm.DeletedAt `gorm:"index"`
 }
