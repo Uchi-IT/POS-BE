@@ -13,7 +13,6 @@ type ProdukGudang struct {
 	Stok       int
 	HargaJual  int
 	HargaBeli  int
-	// UserId string
 	CreatedAt  time.Time      `gorm:"type:DATETIME(0)"`
 	UpdatedAt  time.Time      `gorm:"type:DATETIME(0)"`
 	DeletedAt  gorm.DeletedAt `gorm:"index"`

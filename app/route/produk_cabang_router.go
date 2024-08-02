@@ -3,6 +3,8 @@ package route
 import (
 	"uchiiParfume/features/produkCabang/handler"
 	"uchiiParfume/features/produkCabang/repository"
+	produkG "uchiiParfume/features/produkGudang/repository"
+	cabang "uchiiParfume/features/cabang/repository"
 	"uchiiParfume/features/produkCabang/service"
 	m "uchiiParfume/utils/jwt"
 
@@ -12,7 +14,9 @@ import (
 
 func ProdukCabangRoute(db *gorm.DB, e *echo.Group) {
 	produkRepository := repository.NewProdukRepository(db)
-	produkUseCase := service.NewProdukCService(produkRepository)
+	produkGRepository := produkG.NewProdukRepository(db)
+	cabangRepository := cabang.NewCabangRepository(db)
+	produkUseCase := service.NewProdukCService(produkRepository,cabangRepository,produkGRepository)
 	producController := handler.NewProdukCHandler(produkUseCase)
 
 	produkCabang := e.Group("/produk-cabang")

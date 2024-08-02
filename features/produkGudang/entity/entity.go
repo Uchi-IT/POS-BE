@@ -13,7 +13,6 @@ type ProdukGudangCore struct {
 	Stok       int
 	HargaJual  int
 	HargaBeli  int
-	// UserId string
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	DeleteAt   gorm.DeletedAt

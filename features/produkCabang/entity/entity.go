@@ -15,10 +15,9 @@ type ProdukCabangCore struct {
 	DuaratusMl          int
 	DuaRatusLimaPuluhMl int
 	Manual              int
-	// ProdukId string
-	// UserId string
-	// CabangId string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeleteAt  gorm.DeletedAt
+	ProdukId            string
+	CabangId            string
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+	DeleteAt            gorm.DeletedAt
 }

@@ -3,15 +3,21 @@ package service
 import (
 	"errors"
 	"uchiiParfume/features/produkCabang/entity"
+	cabang "uchiiParfume/features/cabang/entity"
+	produk "uchiiParfume/features/produkGudang/entity"
 )
 
 type produkCService struct {
 	ProdukRepository entity.ProdukCabangRepositoryInterface
+	CabangRepository cabang.CabangRepositoryInterface
+	ProdukGudangRepository produk.ProdukGudangRepositoryInterface
 }
 
-func NewProdukCService(produkC entity.ProdukCabangRepositoryInterface) entity.ProdukCabangServiceInterface {
+func NewProdukCService(produkC entity.ProdukCabangRepositoryInterface, cabang cabang.CabangRepositoryInterface, produkG produk.ProdukGudangRepositoryInterface) entity.ProdukCabangServiceInterface {
 	return &produkCService{
 		ProdukRepository: produkC,
+		CabangRepository: cabang,
+		ProdukGudangRepository: produkG,
 	}
 }
 
@@ -59,6 +65,16 @@ func (produkUC *produkCService) InputProduk(data entity.ProdukCabangCore) (entit
 		return entity.ProdukCabangCore{}, errors.New("nama produk can't empty")
 	}
 
+	_, errc := produkUC.CabangRepository.GetById(data.CabangId)
+	if errc != nil{
+		return entity.ProdukCabangCore{}, errors.New("cabang not found")
+	}
+
+	_, errg := produkUC.ProdukGudangRepository.GetById(data.ProdukId)
+	if errg != nil{
+		return entity.ProdukCabangCore{}, errors.New("produk not found")
+	}
+
 	if data.HargaJual < 0{
 		return entity.ProdukCabangCore{}, errors.New("harga produk can't less then 0")
 	}
@@ -79,6 +95,16 @@ func (produkUC *produkCService) UpdateProduk(id string, data entity.ProdukCabang
 
 	if data.HargaJual < 0{
 		return errors.New("harga produk can't less then 0")
+	}
+
+	_, errc := produkUC.CabangRepository.GetById(data.CabangId)
+	if errc != nil{
+		return errors.New("cabang not found")
+	}
+
+	_, errg := produkUC.ProdukGudangRepository.GetById(data.ProdukId)
+	if errg != nil{
+		return errors.New("produk not found")
 	}
 
 	_, errGet := produkUC.ProdukRepository.GetById(id)

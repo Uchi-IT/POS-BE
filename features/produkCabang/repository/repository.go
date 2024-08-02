@@ -87,7 +87,7 @@ func (produkRepo *produkCRepository) UpdateProduk(id string, data entity.ProdukC
 	}
 
 	if tx.RowsAffected == 0 {
-		return errors.New("cabang not found")
+		return errors.New("product not found")
 	}
 
 	return nil

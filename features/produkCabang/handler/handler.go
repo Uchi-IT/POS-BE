@@ -50,12 +50,14 @@ func (handler *produkCHandler) InputProduk(e echo.Context) error {
 		DuaratusMl:          input.DuaratusMl,
 		DuaRatusLimaPuluhMl: input.DuaRatusLimaPuluhMl,
 		Manual:              input.Manual,
+		CabangId:            input.CabangId,
+		ProdukId:            input.ProdukId,
 	}
 
 	row, errProduk := handler.produkCService.InputProduk(data)
 	if errProduk != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
-			"message": "error create cabang",
+			"message": "error create produk",
 			"error":   errProduk.Error(),
 		})
 	}
@@ -108,7 +110,6 @@ func (handler *produkCHandler) GetById(e echo.Context) error {
 		"message": "get produk",
 		"data":    response,
 	})
-
 }
 
 func (handler *produkCHandler) GetAllProduk(e echo.Context) error {
@@ -171,7 +172,9 @@ func (handler *produkCHandler) UpdateProduk(e echo.Context) error {
 		DuaratusMl:          data.DuaratusMl,
 		DuaRatusLimaPuluhMl: data.DuaRatusLimaPuluhMl,
 		Manual:              data.Manual,
-	}	
+		ProdukId:            data.ProdukId,
+		CabangId:            data.CabangId,
+	}
 
 	err := handler.produkCService.UpdateProduk(idParams, produkData)
 	if err != nil {
@@ -182,7 +185,7 @@ func (handler *produkCHandler) UpdateProduk(e echo.Context) error {
 	}
 
 	return e.JSON(http.StatusOK, map[string]interface{}{
-		"message": "cabang updated successfully",
+		"message": "produk updated successfully",
 	})
 }
 
