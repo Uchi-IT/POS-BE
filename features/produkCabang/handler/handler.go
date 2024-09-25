@@ -44,7 +44,6 @@ func (handler *produkCHandler) InputProduk(e echo.Context) error {
 
 	data := entity.ProdukCabangCore{
 		Foto:                input.Foto,
-		NamaProduk:          input.NamaProduk,
 		HargaJual:           input.HargaJual,
 		SeratusMl:           input.SeratusMl,
 		DuaratusMl:          input.DuaratusMl,
@@ -71,6 +70,7 @@ func (handler *produkCHandler) InputProduk(e echo.Context) error {
 		DuaratusMl:          row.DuaratusMl,
 		DuaRatusLimaPuluhMl: row.DuaRatusLimaPuluhMl,
 		Manual:              row.Manual,
+		Total:               row.Total,
 	}
 
 	return e.JSON(http.StatusOK, map[string]any{
@@ -105,6 +105,7 @@ func (handler *produkCHandler) GetById(e echo.Context) error {
 		DuaratusMl:          data.DuaratusMl,
 		DuaRatusLimaPuluhMl: data.DuaRatusLimaPuluhMl,
 		Manual:              data.Manual,
+		Total:               data.Total,
 	}
 	return e.JSON(http.StatusOK, map[string]any{
 		"message": "get produk",
@@ -113,7 +114,9 @@ func (handler *produkCHandler) GetById(e echo.Context) error {
 }
 
 func (handler *produkCHandler) GetAllProduk(e echo.Context) error {
-	data, err := handler.produkCService.GetAllProduk()
+	search := e.QueryParam("search")
+	sort := e.QueryParam("sort")
+	data, err := handler.produkCService.GetAllProduk(search, sort)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all produk",
@@ -131,6 +134,7 @@ func (handler *produkCHandler) GetAllProduk(e echo.Context) error {
 			DuaratusMl:          v.DuaratusMl,
 			DuaRatusLimaPuluhMl: v.DuaRatusLimaPuluhMl,
 			Manual:              v.Manual,
+			Total:               v.Total,
 		}
 		dataList = append(dataList, result)
 	}
@@ -166,7 +170,6 @@ func (handler *produkCHandler) UpdateProduk(e echo.Context) error {
 
 	produkData := entity.ProdukCabangCore{
 		Foto:                data.Foto,
-		NamaProduk:          data.NamaProduk,
 		HargaJual:           data.HargaJual,
 		SeratusMl:           data.SeratusMl,
 		DuaratusMl:          data.DuaratusMl,

@@ -1,17 +1,17 @@
 package entity
 
 import (
+	cm "uchiiParfume/features/cabang/model"
 	"uchiiParfume/features/users/model"
-	cm "uchiiParfume/features/cabang/model"	
 )
 
-func CabangModelToCabangCore(data cm.Cabang) UserCabangCore{
+func CabangModelToCabangCore(data cm.Cabang) UserCabangCore {
 	return UserCabangCore{
 		Cabang: data.NamaCabang,
 	}
 }
 
-func ListCabangModelToListCabangCore(data []cm.Cabang) []UserCabangCore{
+func ListCabangModelToListCabangCore(data []cm.Cabang) []UserCabangCore {
 	coreCabang := []UserCabangCore{}
 	for _, v := range data {
 		cabang := CabangModelToCabangCore(v)
@@ -40,6 +40,7 @@ func UserModelToUserCore(user model.User) UsersCore {
 	userCore := UsersCore{
 		Id:       user.Id,
 		Email:    user.Email,
+		Nama:     user.Nama,
 		Password: user.Password,
 		Role:     user.Role,
 	}
@@ -52,6 +53,7 @@ func UserCoreToUserModel(user UsersCore) model.User {
 	userModel := model.User{
 		Id:       user.Id,
 		Email:    user.Email,
+		Nama:     user.Nama,
 		Password: user.Password,
 		Role:     user.Role,
 	}

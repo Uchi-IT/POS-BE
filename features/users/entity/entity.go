@@ -10,6 +10,7 @@ type UsersCore struct {
 	Id        string
 	Email     string
 	Password  string
+	Nama      string
 	Cabang_id []string
 	Cabang    []UserCabangCore
 	Role      string
@@ -18,6 +19,6 @@ type UsersCore struct {
 	DeleteAt  gorm.DeletedAt
 }
 
-type UserCabangCore struct{
+type UserCabangCore struct {
 	Cabang string
 }

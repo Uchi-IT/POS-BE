@@ -2,6 +2,7 @@ package handler
 
 type UserResponse struct {
 	Id        string           `json:"id"`
+	Nama      string           `json:"nama"`
 	Email     string           `json:"email"`
 	Cabang_id []string         `json:"cabang_id"`
 	Cabang    []CabangResponse `json:"cabang"`

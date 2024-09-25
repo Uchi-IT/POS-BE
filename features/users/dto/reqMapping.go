@@ -2,7 +2,6 @@ package handler
 
 import "uchiiParfume/features/users/entity"
 
-
 func CabangrequestToCabangCore(data UserCabangRequest) entity.UserCabangCore {
 	return entity.UserCabangCore{
 		// TrashCategoryID: category.TrashCategoryID,
@@ -11,19 +10,20 @@ func CabangrequestToCabangCore(data UserCabangRequest) entity.UserCabangCore {
 }
 
 func ListCabangRequestToCabangCore(data []UserCabangRequest) []entity.UserCabangCore {
-	listCategory := []entity.UserCabangCore{}
+	listCabang := []entity.UserCabangCore{}
 	for _, v := range data {
-		category := CabangrequestToCabangCore(v)
-		listCategory = append(listCategory, category)
+		cabang := CabangrequestToCabangCore(v)
+		listCabang = append(listCabang, cabang)
 	}
 
-	return listCategory
+	return listCabang
 }
 
 func UserRequestToUserCore(data UserRequest) entity.UsersCore {
 	cabangReq := entity.UsersCore{
-		Email:    data.Email,
-		Password: data.Password,
+		Nama:      data.Nama,
+		Email:     data.Email,
+		Password:  data.Password,
 		Cabang_id: data.Cabang_id,
 	}
 	cabang := ListCabangRequestToCabangCore(data.Cabang)

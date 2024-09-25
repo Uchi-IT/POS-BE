@@ -66,7 +66,10 @@ func (user *userHandler) GetAllUser(e echo.Context) error {
 		})
 	}
 
-	data, err := user.userService.GetAllUser()
+	search := e.QueryParam("search")
+	sort := e.QueryParam("sort")
+
+	data, err := user.userService.GetAllUser(search, sort)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all user",

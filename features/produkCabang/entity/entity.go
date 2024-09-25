@@ -15,6 +15,7 @@ type ProdukCabangCore struct {
 	DuaratusMl          int
 	DuaRatusLimaPuluhMl int
 	Manual              int
+	Total               int
 	ProdukId            string
 	CabangId            string
 	CreatedAt           time.Time

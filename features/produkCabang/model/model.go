@@ -15,9 +15,10 @@ type ProdukCabang struct {
 	DuaratusMl          int `gorm:"default:0"`
 	DuaRatusLimaPuluhMl int `gorm:"default:0"`
 	Manual              int `gorm:"default:0"`
+	Total               int `gorm:"default:0"`
 	ProdukId            string
 	CabangId            string
-	CreatedAt time.Time      `gorm:"type:timestamp"`
-	UpdatedAt time.Time      `gorm:"type:timestamp"`
-	DeleteAt  gorm.DeletedAt `gorm:"index"`
+	CreatedAt           time.Time      `gorm:"type:timestamp"`
+	UpdatedAt           time.Time      `gorm:"type:timestamp"`
+	DeleteAt            gorm.DeletedAt `gorm:"index"`
 }

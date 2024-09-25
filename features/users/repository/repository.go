@@ -73,12 +73,8 @@ func (userRepo *userRepository) CreateUser(data entity.UsersCore) (entity.UsersC
 		txOuter.Rollback()
 		return entity.UsersCore{}, err
 	}
-	fmt.Println("Data sebelum mapping : ")
-	fmt.Println(data)
 
 	input := entity.UserModelToUserCore(userData)
-	fmt.Println("Input : ")
-	fmt.Println(input)
 	input.Role = "user"
 
 	for i, cabangId := range data.Cabang_id {
@@ -133,14 +129,37 @@ func (userRepo *userRepository) DeleteUser(id string) error {
 }
 
 // GetAllUser implements entity.UsersRepositoryInterface.
-func (userRepo *userRepository) GetAllUser() ([]entity.UsersCore, error) {
+func (userRepo *userRepository) GetAllUser(search, filter string) ([]entity.UsersCore, error) {
 	var dataUser []model.User
 
-	errData := userRepo.db.Preload("Cabang").Find(&dataUser).Error
+	// Initialize query with preload for Cabang
+	query := userRepo.db.Preload("Cabang").Model(&model.User{})
+
+	// Add search functionality
+	if search != "" {
+		query = query.Where("nama LIKE ? OR email LIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+	
+	// Add sorting based on filter
+	if filter == "nama_asc" {
+		query = query.Order("nama ASC")
+	}else if filter == "nama_desc" {
+		query = query.Order("nama DESC")
+	// } else if filter == "cabang_asc" {
+	// 	query = query.Order("Cabang ASC")
+	// }else if filter == "cabang_desc" {
+	// 	query = query.Order("cabang DESC")
+	} else{
+		query = query.Order("created_at DESC")
+	}
+
+	// Execute the query
+	errData := query.Find(&dataUser).Error
 	if errData != nil {
 		return nil, errData
 	}
 
+	// Map data from model to core
 	mapData := entity.ListUserModelToUserCore(dataUser)
 	return mapData, nil
 }

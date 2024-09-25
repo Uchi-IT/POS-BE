@@ -132,7 +132,10 @@ func (handler *produkGHandler) GetAllProduk(e echo.Context) error {
 		})
 	}
 
-	data, err := handler.produkGService.GetAllProduk()
+	search := e.QueryParam("search")
+	filter := e.QueryParam("filter")
+
+	data, err := handler.produkGService.GetAllProduk(search, filter)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all produk",

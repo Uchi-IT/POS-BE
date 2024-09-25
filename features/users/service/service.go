@@ -60,8 +60,8 @@ func (userUC *userService) DeleteUser(id string) error {
 }
 
 // GetAllUser implements entity.UsersServiceInterface.
-func (userUC *userService) GetAllUser() ([]entity.UsersCore, error) {
-	users, err := userUC.UserRepository.GetAllUser()
+func (userUC *userService) GetAllUser(search, sort string) ([]entity.UsersCore, error) {
+	users, err := userUC.UserRepository.GetAllUser(search, sort)
 	if err != nil {
 		return nil, errors.New("error get data")
 	}

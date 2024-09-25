@@ -11,6 +11,7 @@ type User struct {
 	Id        string `gorm:"primary key"`
 	Email     string
 	Password  string
+	Nama      string
 	Cabang    []model.Cabang `gorm:"many2many:UserCabang"`
 	cabang_id []string       `gorm:"-"`
 	Role      string         `gorm:"default:user"`

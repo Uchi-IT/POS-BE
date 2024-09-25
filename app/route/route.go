@@ -9,8 +9,9 @@ func New(e *echo.Echo, db *gorm.DB) {
 
 	base := e.Group("v1/api")
 
-	UserRoute(db,base)
-	CabangRoute(db,base)
-	ProdukCabangRoute(db,base)
-	ProdukGudangRoute(db,base)
+	UserRoute(db, base)
+	CabangRoute(db, base)
+	ProdukCabangRoute(db, base)
+	ProdukGudangRoute(db, base)
+	TransactionRoute(db, base)
 }

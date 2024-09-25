@@ -32,14 +32,19 @@ func (produkRepo *produkGRepository) DeleteProduk(id string) error {
 }
 
 // GetAllProduk implements entity.ProdukGudangRepositoryInterface.
-func (produkRepo *produkGRepository) GetAllProduk() ([]entity.ProdukGudangCore, error) {
+func (produkRepo *produkGRepository) GetAllProduk(search, filter string) ([]entity.ProdukGudangCore, error) {
 	var dataProduk []model.ProdukGudang
 
-	errData := produkRepo.db.Find(&dataProduk).Error
-	if errData != nil {
-		return nil, errData
+	query := produkRepo.db.Model(&model.ProdukGudang{})
+
+	if search != "" {
+		query = query.Where("nama_produk ILIKE ?", "%"+search+"%").Order("created_at DESC")
 	}
 
+	tx := query.Order("created_at DESC").Find(&dataProduk)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
 	mapData := entity.ListProdukGModelToProdukGCore(dataProduk)
 	return mapData, nil
 }

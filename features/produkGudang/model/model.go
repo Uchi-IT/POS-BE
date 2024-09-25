@@ -13,7 +13,8 @@ type ProdukGudang struct {
 	Stok       int
 	HargaJual  int
 	HargaBeli  int
-	CreatedAt  time.Time      `gorm:"type:DATETIME(0)"`
-	UpdatedAt  time.Time      `gorm:"type:DATETIME(0)"`
+	CreatedAt  time.Time      `gorm:"timestamp"`
+	UpdatedAt  time.Time      `gorm:"timestamp"`
 	DeletedAt  gorm.DeletedAt `gorm:"index"`
 }
+

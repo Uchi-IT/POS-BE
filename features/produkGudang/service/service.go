@@ -30,8 +30,8 @@ func (produkUC *produkGService) DeleteProduk(id string) error {
 }
 
 // GetAllProduk implements entity.ProdukGudangServiceInterface.
-func (produkUC *produkGService) GetAllProduk() ([]entity.ProdukGudangCore, error) {
-	cabang, err := produkUC.ProdukRepository.GetAllProduk()
+func (produkUC *produkGService) GetAllProduk(search, filter string) ([]entity.ProdukGudangCore, error) {
+	cabang, err := produkUC.ProdukRepository.GetAllProduk(search, filter)
 	if err != nil {
 		return nil, errors.New("error get data")
 	}

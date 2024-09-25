@@ -12,11 +12,12 @@ func ProdukCabangModelToProdukCabangCore(produk model.ProdukCabang) ProdukCabang
 		DuaratusMl:          produk.DuaratusMl,
 		DuaRatusLimaPuluhMl: produk.DuaRatusLimaPuluhMl,
 		Manual:              produk.Manual,
+		Total:               produk.Total,
 	}
 	return produkCore
 }
 
-func ProdukCabangCoreToProdukCabangModel(produk ProdukCabangCore) model.ProdukCabang{
+func ProdukCabangCoreToProdukCabangModel(produk ProdukCabangCore) model.ProdukCabang {
 	produkModel := model.ProdukCabang{
 		Id:                  produk.Id,
 		Foto:                produk.Foto,
@@ -26,11 +27,12 @@ func ProdukCabangCoreToProdukCabangModel(produk ProdukCabangCore) model.ProdukCa
 		DuaratusMl:          produk.DuaratusMl,
 		DuaRatusLimaPuluhMl: produk.DuaRatusLimaPuluhMl,
 		Manual:              produk.Manual,
+		Total:               produk.Total,
 	}
 	return produkModel
 }
 
-func ListProdukCabangModelToListProdukCabangCore(produk []model.ProdukCabang) []ProdukCabangCore{
+func ListProdukCabangModelToListProdukCabangCore(produk []model.ProdukCabang) []ProdukCabangCore {
 	coreProduk := []ProdukCabangCore{}
 	for _, v := range produk {
 		data := ProdukCabangModelToProdukCabangCore(v)

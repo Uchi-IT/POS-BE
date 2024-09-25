@@ -9,19 +9,20 @@ func CabangCoreToCabangResponse(data entity.UserCabangCore) CabangResponse {
 }
 
 func ListCabangCoreToCabangResponse(data []entity.UserCabangCore) []CabangResponse {
-	ResponseCategory := []CabangResponse{}
+	ResponseCabang := []CabangResponse{}
 	for _, v := range data {
-		category := CabangCoreToCabangResponse(v)
-		ResponseCategory = append(ResponseCategory, category)
+		cabang := CabangCoreToCabangResponse(v)
+		ResponseCabang = append(ResponseCabang, cabang)
 	}
-	return ResponseCategory
+	return ResponseCabang
 }
 
 func UserCoreToUserResponse(data entity.UsersCore) UserResponse {
 	userResp := UserResponse{
-		Id:    data.Id,
-		Email: data.Email,
-		Role:  data.Role,
+		Id:        data.Id,
+		Nama:      data.Nama,
+		Email:     data.Email,
+		Role:      data.Role,
 		Cabang_id: data.Cabang_id,
 	}
 	cabang := ListCabangCoreToCabangResponse(data.Cabang)
@@ -33,8 +34,8 @@ func UserCoreToUserResponse(data entity.UsersCore) UserResponse {
 func ListUserCoreToListUserResponse(data []entity.UsersCore) []UserResponse {
 	userResp := []UserResponse{}
 	for _, user := range data {
-		dataData := UserCoreToUserResponse(user)
-		userResp = append(userResp, dataData)
+		dataUser := UserCoreToUserResponse(user)
+		userResp = append(userResp, dataUser)
 	}
 	return userResp
 }

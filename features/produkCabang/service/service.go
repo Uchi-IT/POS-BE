@@ -2,21 +2,23 @@ package service
 
 import (
 	"errors"
-	"uchiiParfume/features/produkCabang/entity"
 	cabang "uchiiParfume/features/cabang/entity"
+	"uchiiParfume/features/produkCabang/entity"
 	produk "uchiiParfume/features/produkGudang/entity"
+	"uchiiParfume/utils/constanta"
+	"uchiiParfume/utils/validation"
 )
 
 type produkCService struct {
-	ProdukRepository entity.ProdukCabangRepositoryInterface
-	CabangRepository cabang.CabangRepositoryInterface
+	ProdukRepository       entity.ProdukCabangRepositoryInterface
+	CabangRepository       cabang.CabangRepositoryInterface
 	ProdukGudangRepository produk.ProdukGudangRepositoryInterface
 }
 
 func NewProdukCService(produkC entity.ProdukCabangRepositoryInterface, cabang cabang.CabangRepositoryInterface, produkG produk.ProdukGudangRepositoryInterface) entity.ProdukCabangServiceInterface {
 	return &produkCService{
-		ProdukRepository: produkC,
-		CabangRepository: cabang,
+		ProdukRepository:       produkC,
+		CabangRepository:       cabang,
 		ProdukGudangRepository: produkG,
 	}
 }
@@ -36,8 +38,17 @@ func (produkUC *produkCService) DeleteProduk(id string) error {
 }
 
 // GetAllProduk implements entity.ProdukCabangServiceInterface.
-func (produkUC *produkCService) GetAllProduk() ([]entity.ProdukCabangCore, error) {
-	cabang, err := produkUC.ProdukRepository.GetAllProduk()
+func (produkUC *produkCService) GetAllProduk(search, filter string) ([]entity.ProdukCabangCore, error) {
+
+	if filter != "asc" && filter != "desc" {
+        filterData, errEqual := validation.CheckEqualData(filter, constanta.PRODUCT_CABANG)
+        if errEqual != nil {
+            return []entity.ProdukCabangCore{}, errors.New("error : filter tidak valid")
+        }
+        filter = filterData
+    }
+
+	cabang, err := produkUC.ProdukRepository.GetAllProduk(search, filter)
 	if err != nil {
 		return nil, errors.New("error get data")
 	}
@@ -61,26 +72,39 @@ func (produkUC *produkCService) GetById(id string) (entity.ProdukCabangCore, err
 
 // InputProduk implements entity.ProdukCabangServiceInterface.
 func (produkUC *produkCService) InputProduk(data entity.ProdukCabangCore) (entity.ProdukCabangCore, error) {
+	_, errc := produkUC.CabangRepository.GetById(data.CabangId)
+	if errc != nil {
+		return entity.ProdukCabangCore{}, errors.New("cabang not found")
+	}
+
+	dataGudang, errg := produkUC.ProdukGudangRepository.GetById(data.ProdukId)
+	if errg != nil {
+		return entity.ProdukCabangCore{}, errors.New("produk not found")
+	}
+
+	data.NamaProduk = dataGudang.NamaProduk
+
 	if data.NamaProduk == "" {
 		return entity.ProdukCabangCore{}, errors.New("nama produk can't empty")
 	}
 
-	_, errc := produkUC.CabangRepository.GetById(data.CabangId)
-	if errc != nil{
-		return entity.ProdukCabangCore{}, errors.New("cabang not found")
-	}
-
-	_, errg := produkUC.ProdukGudangRepository.GetById(data.ProdukId)
-	if errg != nil{
-		return entity.ProdukCabangCore{}, errors.New("produk not found")
-	}
-
-	if data.HargaJual < 0{
+	if data.HargaJual < 0 {
 		return entity.ProdukCabangCore{}, errors.New("harga produk can't less then 0")
 	}
 
+	count100 := data.SeratusMl * 100
+	count200 := data.DuaratusMl * 200
+	count250 := data.DuaRatusLimaPuluhMl * 250
+
+	countTotal := count100 + count200 + count250 + data.Manual
+
+	data.Total = countTotal
+	println(data.Total)
+	println(countTotal)
+	data.NamaProduk = dataGudang.NamaProduk
+	
 	errInput, err := produkUC.ProdukRepository.InputProduk(data)
-	if err != nil{
+	if err != nil {
 		return entity.ProdukCabangCore{}, err
 	}
 
@@ -93,17 +117,17 @@ func (produkUC *produkCService) UpdateProduk(id string, data entity.ProdukCabang
 		return errors.New("nama produk can't empty")
 	}
 
-	if data.HargaJual < 0{
+	if data.HargaJual < 0 {
 		return errors.New("harga produk can't less then 0")
 	}
 
 	_, errc := produkUC.CabangRepository.GetById(data.CabangId)
-	if errc != nil{
+	if errc != nil {
 		return errors.New("cabang not found")
 	}
 
 	_, errg := produkUC.ProdukGudangRepository.GetById(data.ProdukId)
-	if errg != nil{
+	if errg != nil {
 		return errors.New("produk not found")
 	}
 
@@ -112,7 +136,7 @@ func (produkUC *produkCService) UpdateProduk(id string, data entity.ProdukCabang
 		return errGet
 	}
 
-	err := produkUC.ProdukRepository.UpdateProduk(id,data)
+	err := produkUC.ProdukRepository.UpdateProduk(id, data)
 	if err != nil {
 		return err
 	}

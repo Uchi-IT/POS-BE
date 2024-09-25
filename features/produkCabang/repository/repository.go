@@ -32,15 +32,30 @@ func (produkRepo *produkCRepository) DeleteProduk(id string) error {
 }
 
 // GetAllProduk implements entity.ProdukCabangRepositoryInterface.
-func (produkRepo *produkCRepository) GetAllProduk() ([]entity.ProdukCabangCore, error) {
+func (produkRepo *produkCRepository) GetAllProduk(search, filter string) ([]entity.ProdukCabangCore, error) {
 	var dataProduk []model.ProdukCabang
 
-	errData := produkRepo.db.Find(&dataProduk).Error
-	if errData != nil {
-		return nil, errData
+	query := produkRepo.db.Model(&model.ProdukCabang{})
+
+	if search != "" {
+		query = query.Where("nama_produk LIKE ?", "%"+search+"%").Order("created_at DESC")
+	}
+
+	if filter == "asc" {
+        query = query.Order("nama_produk ASC")
+    } else if filter == "desc" {
+        query = query.Order("nama_produk DESC")
+    } else {
+        query = query.Order("created_at DESC")
+    }
+
+	tx := query.Order("created_at DESC").Find(&dataProduk)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
 
 	mapData := entity.ListProdukCabangModelToListProdukCabangCore(dataProduk)
+
 	return mapData, nil
 }
 
