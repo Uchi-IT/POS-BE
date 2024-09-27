@@ -3,7 +3,7 @@ package entity
 type CabangRepositoryInterface interface {
 	CreateCabang(data CabangCore) (CabangCore, error)
 	GetById(id string) (CabangCore, error)
-	GetAllCabang() ([]CabangCore, error)
+	GetAllCabang(search, filter string) ([]CabangCore, error)
 	UpdateCabang(id string, data CabangCore) error
 	DeleteCabang(id string) error
 	IsNamaCabangExist(namaCabang string) (bool, error)
@@ -12,7 +12,7 @@ type CabangRepositoryInterface interface {
 type CabangServiceInterface interface{
 	CreateCabang(data CabangCore) (CabangCore, error)
 	GetById(id string) (CabangCore, error)
-	GetAllCabang() ([]CabangCore, error)
+	GetAllCabang(search, filter string) ([]CabangCore, error)
 	UpdateCabang(id string, data CabangCore) error
 	DeleteCabang(id string) error
 }

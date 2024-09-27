@@ -38,11 +38,14 @@ func ListCabangCoreToCabangModel(data []UserCabangCore) []cm.Cabang {
 
 func UserModelToUserCore(user model.User) UsersCore {
 	userCore := UsersCore{
-		Id:       user.Id,
-		Email:    user.Email,
-		Nama:     user.Nama,
-		Password: user.Password,
-		Role:     user.Role,
+		Id:        user.Id,
+		Email:     user.Email,
+		Nama:      user.Nama,
+		Password:  user.Password,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeleteAt:  user.DeletedAt,
 	}
 	cabang := ListCabangModelToListCabangCore(user.Cabang)
 	userCore.Cabang = cabang
@@ -51,11 +54,14 @@ func UserModelToUserCore(user model.User) UsersCore {
 
 func UserCoreToUserModel(user UsersCore) model.User {
 	userModel := model.User{
-		Id:       user.Id,
-		Email:    user.Email,
-		Nama:     user.Nama,
-		Password: user.Password,
-		Role:     user.Role,
+		Id:        user.Id,
+		Email:     user.Email,
+		Nama:      user.Nama,
+		Password:  user.Password,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeleteAt,
 	}
 	cabang := ListCabangCoreToCabangModel(user.Cabang)
 	userModel.Cabang = cabang

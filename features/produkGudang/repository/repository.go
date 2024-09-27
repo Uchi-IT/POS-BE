@@ -4,6 +4,7 @@ import (
 	"errors"
 	"uchiiParfume/features/produkGudang/entity"
 	"uchiiParfume/features/produkGudang/model"
+	"uchiiParfume/utils/pagination"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -32,22 +33,43 @@ func (produkRepo *produkGRepository) DeleteProduk(id string) error {
 }
 
 // GetAllProduk implements entity.ProdukGudangRepositoryInterface.
-func (produkRepo *produkGRepository) GetAllProduk(search, filter string) ([]entity.ProdukGudangCore, error) {
+func (produkRepo *produkGRepository) GetAllProduk(page, limit int, search, filter string) ([]entity.ProdukGudangCore, pagination.PageInfo, int, error) {
 	var dataProduk []model.ProdukGudang
+	var totalCount int64
+	offset := (page - 1) * limit
 
+	// Initialize the query
 	query := produkRepo.db.Model(&model.ProdukGudang{})
 
+	// Add search functionality
 	if search != "" {
-		query = query.Where("nama_produk ILIKE ?", "%"+search+"%").Order("created_at DESC")
+		query = query.Where("nama_produk ILIKE ?", "%"+search+"%")
 	}
 
-	tx := query.Order("created_at DESC").Find(&dataProduk)
+	// Add filter if necessary (filter logic can be added here if needed)
+	// Example: query = query.Where("some_column = ?", filter)
+
+	// Count the total number of items before applying pagination
+	tx := query.Count(&totalCount)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, pagination.PageInfo{}, 0, tx.Error
 	}
+
+	// Apply offset and limit for pagination
+	tx = query.Offset(offset).Limit(limit).Order("created_at DESC").Find(&dataProduk)
+	if tx.Error != nil {
+		return nil, pagination.PageInfo{}, 0, tx.Error
+	}
+
+	// Map the data from model to core
 	mapData := entity.ListProdukGModelToProdukGCore(dataProduk)
-	return mapData, nil
+
+	// Create pagination info
+	pageInfo := pagination.CalculateData(int(totalCount), limit, page)
+
+	return mapData, pageInfo, int(totalCount), nil
 }
+
 
 // GetById implements entity.ProdukGudangRepositoryInterface.
 func (produkRepo *produkGRepository) GetById(id string) (entity.ProdukGudangCore, error) {

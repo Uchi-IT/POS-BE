@@ -125,7 +125,10 @@ func (handler *cabangHandler) GetAllCabang(e echo.Context) error {
 		})
 	}
 
-	data, err := handler.cabangService.GetAllCabang()
+	search := e.QueryParam("search")
+	filter := e.QueryParam("filter")
+
+	data, err := handler.cabangService.GetAllCabang(search, filter)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all cabang",
@@ -139,6 +142,9 @@ func (handler *cabangHandler) GetAllCabang(e echo.Context) error {
 			Image:      v.Image,
 			NamaCabang: v.NamaCabang,
 			Alamat:     v.Alamat,
+			CreatedAt: v.CreatedAt.String(),
+			UpdatedAt: v.UpdatedAt.String(),
+			DeleteAt: v.DeleteAt.Time.String(),
 		}
 		dataList = append(dataList, result)
 	}

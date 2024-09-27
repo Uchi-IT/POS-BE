@@ -1,10 +1,10 @@
 package dto
 
 type TransactionResponse struct {
-	Id        uint   `json:"id"`
-	Nama      string   `json:"nama"`
-	Parfum_id []string `json:"parfum_id"`
-	Parfum    []ParfumItemResponse
+	Id         uint     `json:"id"`
+	Nama       string   `json:"nama"`
+	TotalHarga int      `json:"total_harga"`
+	ParfumDetail     []ParfumItemResponse
 }
 
 type ParfumItemResponse struct {

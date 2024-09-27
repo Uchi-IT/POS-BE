@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 	"uchiiParfume/features/produkGudang/entity"
+	"uchiiParfume/utils/pagination"
+	"uchiiParfume/utils/validation"
 )
 
 type produkGService struct {
@@ -30,13 +32,19 @@ func (produkUC *produkGService) DeleteProduk(id string) error {
 }
 
 // GetAllProduk implements entity.ProdukGudangServiceInterface.
-func (produkUC *produkGService) GetAllProduk(search, filter string) ([]entity.ProdukGudangCore, error) {
-	cabang, err := produkUC.ProdukRepository.GetAllProduk(search, filter)
-	if err != nil {
-		return nil, errors.New("error get data")
+func (produkUC *produkGService) GetAllProduk(page, limit int, search, filter string) ([]entity.ProdukGudangCore, pagination.PageInfo, int, error) {
+	if limit > 15 {
+		return nil, pagination.PageInfo{}, 0, errors.New("limit tidak boleh lebih dari 10")
 	}
 
-	return cabang, nil
+	page, limit = validation.ValidateCountLimitAndPage(page, limit)
+
+	cabang, pageInfo, count, err := produkUC.ProdukRepository.GetAllProduk(page, limit, search, filter)
+	if err != nil {
+		return []entity.ProdukGudangCore{}, pagination.PageInfo{}, 0, errors.New("error get data")
+	}
+
+	return cabang, pageInfo, count, nil
 }
 
 // GetById implements entity.ProdukGudangServiceInterface.
@@ -63,12 +71,12 @@ func (produkUC *produkGService) InputProduk(data entity.ProdukGudangCore) (entit
 		return entity.ProdukGudangCore{}, errors.New("stok can't less then 0")
 	}
 
-	if data.HargaJual < 0 || data.HargaBeli < 0{
+	if data.HargaJual < 0 || data.HargaBeli < 0 {
 		return entity.ProdukGudangCore{}, errors.New("harga can't less then 0")
 	}
 
 	errInput, err := produkUC.ProdukRepository.InputProduk(data)
-	if err != nil{
+	if err != nil {
 		return entity.ProdukGudangCore{}, err
 	}
 
@@ -85,12 +93,12 @@ func (produkUC *produkGService) UpdateProduk(id string, data entity.ProdukGudang
 		return errors.New("stok can't less then 0")
 	}
 
-	if data.HargaJual < 0 || data.HargaBeli < 0{
+	if data.HargaJual < 0 || data.HargaBeli < 0 {
 		return errors.New("harga can't less then 0")
 	}
 
-	err := produkUC.ProdukRepository.UpdateProduk(id,data)
-	if err != nil{
+	err := produkUC.ProdukRepository.UpdateProduk(id, data)
+	if err != nil {
 		return err
 	}
 

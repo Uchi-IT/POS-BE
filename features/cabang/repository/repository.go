@@ -28,7 +28,7 @@ func (cabangRepo *cabangRepository) CreateCabang(data entity.CabangCore) (entity
 
 	input := entity.CabangCoreToCabangModel(data)
 	input.Id = newUUID.String()
-	
+
 	errCabang := cabangRepo.db.Save(&input)
 	if errCabang.Error != nil {
 		return entity.CabangCore{}, errCabang.Error
@@ -52,17 +52,39 @@ func (cabangRepo *cabangRepository) DeleteCabang(id string) error {
 }
 
 // GetAllCabang implements entity.CabangRepositoryInterface.
-func (cabangRepo *cabangRepository) GetAllCabang() ([]entity.CabangCore, error) {
+func (cabangRepo *cabangRepository) GetAllCabang(search, filter string) ([]entity.CabangCore, error) {
 	var dataCabang []model.Cabang
 
-	errData := cabangRepo.db.Find(&dataCabang).Error
-	if errData != nil {
-		return nil, errData
+	// Initialize query
+	query := cabangRepo.db.Model(&model.Cabang{})
+
+	// Add search functionality
+	if search != "" {
+		query = query.Where("cabangs.nama_cabang ILIKE ?", "%"+search+"%") // Use LIKE for partial search
 	}
 
+	// Add sorting based on filter
+	if filter == "nama_asc" {
+		query = query.Order("cabangs.nama_cabang ASC") // Correct column name
+	} else if filter == "nama_desc" {
+		query = query.Order("cabangs.nama_cabang DESC") // Correct column name
+	} else if filter == "lates_update" {
+		query = query.Order("cabangs.updated_at DESC") // Sort by last updated
+	} else {
+		query = query.Order("cabangs.created_at DESC") // Default sorting by created date
+	}
+
+	// Execute the query
+	tx := query.Find(&dataCabang)
+	if tx.Error != nil { // Correct error checking
+		return nil, tx.Error
+	}
+
+	// Map data from model to core
 	mapData := entity.ListCabangModelToCabangCore(dataCabang)
 	return mapData, nil
 }
+
 
 // GetById implements entity.CabangRepositoryInterface.
 func (cabangRepo *cabangRepository) GetById(id string) (entity.CabangCore, error) {
@@ -96,9 +118,9 @@ func (cabangRepo *cabangRepository) UpdateCabang(id string, data entity.CabangCo
 // IsNamaCabangExist implements entity.CabangRepositoryInterface.
 func (cabangRepo *cabangRepository) IsNamaCabangExist(namaCabang string) (bool, error) {
 	var count int64
-    err := cabangRepo.db.Model(&model.Cabang{}).Where("nama_cabang = ?", namaCabang).Count(&count).Error
-    if err != nil {
-        return false, err
-    }
-    return count > 0, nil
+	err := cabangRepo.db.Model(&model.Cabang{}).Where("nama_cabang = ?", namaCabang).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

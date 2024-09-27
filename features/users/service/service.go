@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"uchiiParfume/features/users/entity"
 	crypt "uchiiParfume/utils/bcrypt"
+	"uchiiParfume/utils/pagination"
+	"uchiiParfume/utils/validation"
 )
 
 type userService struct {
@@ -60,13 +62,19 @@ func (userUC *userService) DeleteUser(id string) error {
 }
 
 // GetAllUser implements entity.UsersServiceInterface.
-func (userUC *userService) GetAllUser(search, sort string) ([]entity.UsersCore, error) {
-	users, err := userUC.UserRepository.GetAllUser(search, sort)
-	if err != nil {
-		return nil, errors.New("error get data")
+func (userUC *userService) GetAllUser(page, limit int, search, sort, filter string) ([]entity.UsersCore, pagination.PageInfo, int, error) {
+	if limit > 15 {
+		return nil, pagination.PageInfo{}, 0, errors.New("limit tidak boleh lebih dari 10")
 	}
 
-	return users, nil
+	page, limit = validation.ValidateCountLimitAndPage(page, limit)
+
+	users, pageInfo, count, err := userUC.UserRepository.GetAllUser(page, limit, search, sort, filter)
+	if err != nil {
+		return []entity.UsersCore{}, pagination.PageInfo{}, 0, errors.New("error get data")
+	}
+
+	return users, pageInfo, count, nil
 }
 
 // GetById implements entity.UsersServiceInterface.
@@ -112,7 +120,7 @@ func (userUC *userService) UpdateUser(id string, data entity.UsersCore) error {
 		return errGet
 	}
 
-	if user.Id == ""{
+	if user.Id == "" {
 		return errors.New("user not found")
 	}
 

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	handler "uchiiParfume/features/users/dto"
 	"uchiiParfume/features/users/entity"
 	middleware "uchiiParfume/utils/jwt"
@@ -45,7 +46,6 @@ func (user *userHandler) CreateUser(e echo.Context) error {
 			"error":   errUser.Error(),
 		})
 	}
-	
 
 	return e.JSON(http.StatusOK, map[string]any{
 		"message": "succes create user",
@@ -68,8 +68,11 @@ func (user *userHandler) GetAllUser(e echo.Context) error {
 
 	search := e.QueryParam("search")
 	sort := e.QueryParam("sort")
+	filter := e.QueryParam("filter")
+	page, _ := strconv.Atoi(e.QueryParam("page"))
+	limit, _ := strconv.Atoi(e.QueryParam("limit"))
 
-	data, err := user.userService.GetAllUser(search, sort)
+	data, pagination, count, err := user.userService.GetAllUser(page, limit, search, sort, filter)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all user",
@@ -79,8 +82,10 @@ func (user *userHandler) GetAllUser(e echo.Context) error {
 	dataList := handler.ListUserCoreToListUserResponse(data)
 
 	return e.JSON(http.StatusOK, map[string]any{
-		"message": "get all user",
-		"data":    dataList,
+		"message":    "get all user",
+		"data":       dataList,
+		"page":       pagination,
+		"total_data": count,
 	})
 }
 
@@ -102,7 +107,7 @@ func (user *userHandler) GetSpecificUser(e echo.Context) error {
 	}
 
 	response := handler.UserCoreToUserResponse(data)
-	
+
 	return e.JSON(http.StatusOK, map[string]any{
 		"message": "get user",
 		"data":    response,

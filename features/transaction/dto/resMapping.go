@@ -23,12 +23,12 @@ func ListItemCoreToItemResponse(data []entity.TransactionItemCore) []ParfumItemR
 
 func TransactionCoreToTransactionResponse(data entity.TransactionCore) TransactionResponse {
 	transactionResp := TransactionResponse{
-		Id:        data.Id,
-		Nama:      data.Nama,
-		Parfum_id: data.Parfum_id,
+		Id:         data.Id,
+		Nama:       data.Nama,
+		TotalHarga: data.TotalHarga,
 	}
-	parfum := ListItemCoreToItemResponse(data.Parfum)
-	transactionResp.Parfum = parfum
+	parfumDetail := ListItemCoreToItemResponse(data.ParfumDetail)
+	transactionResp.ParfumDetail = parfumDetail
 
 	return transactionResp
 }

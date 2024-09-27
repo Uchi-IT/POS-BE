@@ -52,8 +52,8 @@ func (cabangUC *cabangService) DeleteCabang(id string) error {
 }
 
 // GetAllCabang implements entity.CabangServiceInterface.
-func (cabangUC *cabangService) GetAllCabang() ([]entity.CabangCore, error) {
-	cabang, err := cabangUC.CabangRepository.GetAllCabang()
+func (cabangUC *cabangService) GetAllCabang(search, filter string) ([]entity.CabangCore, error) {
+	cabang, err := cabangUC.CabangRepository.GetAllCabang(search, filter)
 	if err != nil {
 		return nil, errors.New("error get data")
 	}

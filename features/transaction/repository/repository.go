@@ -96,12 +96,12 @@ func (transRepo *transactionRepository) CreateTransaction(data entity.Transactio
 func (transRepo *transactionRepository) GetAllTransaction() ([]entity.TransactionCore, error) {
 	var dataTransaction []model.Transaction
 
-	errData := transRepo.db.Preload("Parfum").Find(&dataTransaction).Error
+	errData := transRepo.db.Preload("Parfum").Preload("ParfumDetail").Find(&dataTransaction).Error
 	if errData != nil {
 		return nil, errData
 	}
 
-	mapData := entity.ListTransactionModelToTransactionCore(dataTransaction)
+	mapData := entity.ListTransactionDetailModelToTransactionDetailCore(dataTransaction)
 	return mapData, nil
 }
 

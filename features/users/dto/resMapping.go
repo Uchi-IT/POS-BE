@@ -24,6 +24,7 @@ func UserCoreToUserResponse(data entity.UsersCore) UserResponse {
 		Email:     data.Email,
 		Role:      data.Role,
 		Cabang_id: data.Cabang_id,
+		UpdatedAt: data.UpdatedAt,
 	}
 	cabang := ListCabangCoreToCabangResponse(data.Cabang)
 	userResp.Cabang = cabang

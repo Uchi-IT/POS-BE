@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"uchiiParfume/features/produkGudang/dto"
 	"uchiiParfume/features/produkGudang/entity"
 	middleware "uchiiParfume/utils/jwt"
@@ -134,8 +135,10 @@ func (handler *produkGHandler) GetAllProduk(e echo.Context) error {
 
 	search := e.QueryParam("search")
 	filter := e.QueryParam("filter")
+	page, _ := strconv.Atoi(e.QueryParam("page"))
+	limit, _ := strconv.Atoi(e.QueryParam("limit"))
 
-	data, err := handler.produkGService.GetAllProduk(search, filter)
+	data, pagination, count, err := handler.produkGService.GetAllProduk(page, limit, search, filter)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{
 			"message": "error get all produk",
@@ -156,8 +159,10 @@ func (handler *produkGHandler) GetAllProduk(e echo.Context) error {
 	}
 
 	return e.JSON(http.StatusOK, map[string]any{
-		"message": "get all produk",
-		"data":    dataList,
+		"message":    "get all produk",
+		"data":       dataList,
+		"page":       pagination,
+		"total_data": count,
 	})
 }
 

@@ -11,7 +11,7 @@ type TransactionCore struct {
 	Nama       string
 	TotalHarga int
 	Parfum     []TransactionItemCore
-	Parfum_id  []string
+	ParfumDetail []TransactionItemCore
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	DeleteAt   gorm.DeletedAt

@@ -8,6 +8,7 @@ import (
 	"uchiiParfume/features/users/model"
 	bcrypt "uchiiParfume/utils/bcrypt"
 	utils "uchiiParfume/utils/jwt"
+	"uchiiParfume/utils/pagination"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -129,39 +130,45 @@ func (userRepo *userRepository) DeleteUser(id string) error {
 }
 
 // GetAllUser implements entity.UsersRepositoryInterface.
-func (userRepo *userRepository) GetAllUser(search, filter string) ([]entity.UsersCore, error) {
+func (userRepo *userRepository) GetAllUser(page, limit int, search, sort, filter string) ([]entity.UsersCore, pagination.PageInfo, int, error) {
 	var dataUser []model.User
+	var totalCount int64
+	offset := (page - 1) * limit
 
-	// Initialize query with preload for Cabang
-	query := userRepo.db.Preload("Cabang").Model(&model.User{})
+	query := userRepo.db.Preload("Cabang").Model(&model.User{}).
+		Joins("JOIN user_cabangs ON user_cabangs.user_id = users.id")
 
-	// Add search functionality
 	if search != "" {
-		query = query.Where("nama LIKE ? OR email LIKE ?", "%"+search+"%", "%"+search+"%")
-	}
-	
-	// Add sorting based on filter
-	if filter == "nama_asc" {
-		query = query.Order("nama ASC")
-	}else if filter == "nama_desc" {
-		query = query.Order("nama DESC")
-	// } else if filter == "cabang_asc" {
-	// 	query = query.Order("Cabang ASC")
-	// }else if filter == "cabang_desc" {
-	// 	query = query.Order("cabang DESC")
-	} else{
-		query = query.Order("created_at DESC")
+		query = query.Where("users.nama LIKE ? OR users.email LIKE ?", "%"+search+"%", "%"+search+"%")
 	}
 
-	// Execute the query
-	errData := query.Find(&dataUser).Error
-	if errData != nil {
-		return nil, errData
+	if filter != "" {
+		query = query.Where("user_cabangs.cabang_id = ?", filter)
 	}
 
-	// Map data from model to core
+	if sort == "nama_asc" {
+		query = query.Order("users.nama ASC")
+	} else if sort == "nama_desc" {
+		query = query.Order("users.nama DESC")
+	} else {
+		query = query.Order("users.created_at DESC")
+	}
+
+	tx := query.Count(&totalCount)
+	if tx.Error != nil {
+		return nil, pagination.PageInfo{}, 0, tx.Error
+	}
+
+	tx = query.Offset(offset).Limit(limit).Find(&dataUser)
+	if tx.Error != nil {
+		return nil, pagination.PageInfo{}, 0, tx.Error
+	}
+
 	mapData := entity.ListUserModelToUserCore(dataUser)
-	return mapData, nil
+
+	pageInfo := pagination.CalculateData(int(totalCount), limit, page)
+
+	return mapData, pageInfo, int(totalCount), nil
 }
 
 // GetById implements entity.UsersRepositoryInterface.

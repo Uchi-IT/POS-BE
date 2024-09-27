@@ -8,6 +8,9 @@ func CabangModelToCabangCore(cabang model.Cabang) CabangCore {
 		Image:      cabang.Image,
 		NamaCabang: cabang.NamaCabang,
 		Alamat:     cabang.Alamat,
+		CreatedAt:  cabang.CreatedAt,
+		UpdatedAt:  cabang.UpdatedAt,
+		DeleteAt:   cabang.DeleteAt,
 	}
 	return cabangCore
 }
@@ -18,6 +21,9 @@ func CabangCoreToCabangModel(cabang CabangCore) model.Cabang {
 		Image:      cabang.Image,
 		NamaCabang: cabang.NamaCabang,
 		Alamat:     cabang.Alamat,
+		CreatedAt:  cabang.CreatedAt,
+		UpdatedAt:  cabang.UpdatedAt,
+		DeleteAt:   cabang.DeleteAt,
 	}
 	return cabangModel
 }

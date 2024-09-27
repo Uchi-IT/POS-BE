@@ -22,3 +22,16 @@ func CheckEqualData(data string, validData []string) (string, error) {
 
 	return inputData, nil
 }
+
+func ValidateCountLimitAndPage(page, limit int) (int, int) {
+	if page <= 0 {
+		page = 1
+	}
+
+	maxLimit := 15
+	if limit <= 0 || limit > maxLimit {
+		limit = maxLimit
+	}
+
+	return page, limit
+}
