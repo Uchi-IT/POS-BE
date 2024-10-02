@@ -27,12 +27,12 @@ func (transUC *transactionService) CreateTransaction(data entity.TransactionCore
 
 // GetAllTransaction implements entity.TransactionServiceInterface.
 func (transUC *transactionService) GetAllTransaction() ([]entity.TransactionCore, error) {
-	users, err := transUC.TransactionRepository.GetAllTransaction()
+	transactions, err := transUC.TransactionRepository.GetAllTransaction()
 	if err != nil {
 		return nil, errors.New("error get data")
 	}
 
-	return users, nil
+	return transactions, nil
 }
 
 // GetAllTransactionItemById implements entity.TransactionServiceInterface.

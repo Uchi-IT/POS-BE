@@ -13,7 +13,7 @@ import (
 func InitMigration(db *gorm.DB){
 	db.AutoMigrate(&cabang.Cabang{})
 	db.AutoMigrate(&users.User{}, &users.UserCabang{})
-	db.AutoMigrate(&produkCabang.ProdukCabang{})
+	db.AutoMigrate(&produkCabang.ProdukCabang{}, &produkCabang.RiwayatProdukCabang{}, &produkCabang.RiwayatProdukCabangItem{})
 	db.AutoMigrate(&produkGudang.ProdukGudang{})
 	db.AutoMigrate(&transaction.Transaction{}, &transaction.TransactionItem{})
 }

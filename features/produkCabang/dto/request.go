@@ -9,4 +9,14 @@ type ProdukCabangRequest struct {
 	Manual              int    `json:"manual"`
 	ProdukId            string `json:"product_id"`
 	CabangId            string `json:"cabang_id"`
+	
+}
+
+type RiwayatProdukCabangRequest struct {
+	Catatan string `json:"catatan"`
+}
+
+type ProdukCabangWithNote struct {
+	Produk []ProdukCabangRequest `json:"produk"`
+	Catatan RiwayatProdukCabangRequest `json:"catatan"`
 }

@@ -41,12 +41,12 @@ func (produkUC *produkCService) DeleteProduk(id string) error {
 func (produkUC *produkCService) GetAllProduk(search, filter string) ([]entity.ProdukCabangCore, error) {
 
 	if filter != "asc" && filter != "desc" {
-        filterData, errEqual := validation.CheckEqualData(filter, constanta.PRODUCT_CABANG)
-        if errEqual != nil {
-            return []entity.ProdukCabangCore{}, errors.New("error : filter tidak valid")
-        }
-        filter = filterData
-    }
+		filterData, errEqual := validation.CheckEqualData(filter, constanta.PRODUCT_CABANG)
+		if errEqual != nil {
+			return []entity.ProdukCabangCore{}, errors.New("error : filter tidak valid")
+		}
+		filter = filterData
+	}
 
 	cabang, err := produkUC.ProdukRepository.GetAllProduk(search, filter)
 	if err != nil {
@@ -71,44 +71,63 @@ func (produkUC *produkCService) GetById(id string) (entity.ProdukCabangCore, err
 }
 
 // InputProduk implements entity.ProdukCabangServiceInterface.
-func (produkUC *produkCService) InputProduk(data entity.ProdukCabangCore) (entity.ProdukCabangCore, error) {
-	_, errc := produkUC.CabangRepository.GetById(data.CabangId)
-	if errc != nil {
-		return entity.ProdukCabangCore{}, errors.New("cabang not found")
+func (produkUC *produkCService) InputProduk(data []entity.ProdukCabangCore, riwayat entity.RiwayatProdukCabangCore) ([]entity.ProdukCabangCore, error) {
+	var results []entity.ProdukCabangCore
+
+	for _, produk := range data {
+		_, errc := produkUC.CabangRepository.GetById(produk.CabangId)
+		if errc != nil {
+			return nil, errors.New("cabang not found")
+		}
+
+		dataGudang, errg := produkUC.ProdukGudangRepository.GetById(produk.ProdukId)
+		if errg != nil {
+			return nil, errors.New("produk not found")
+		}
+
+		produk.NamaProduk = dataGudang.NamaProduk
+
+		if produk.NamaProduk == "" {
+			return nil, errors.New("nama produk can't empty")
+		}
+
+		if produk.HargaJual < 0 {
+			return nil, errors.New("harga produk can't be less than 0")
+		}
+
+		count100 := produk.SeratusMl * 100
+		count200 := produk.DuaratusMl * 200
+		count250 := produk.DuaRatusLimaPuluhMl * 250
+
+		countTotal := count100 + count200 + count250 + produk.Manual
+		produk.Total = countTotal
+
+		// Call repository to insert each product
+		errInput, err := produkUC.ProdukRepository.InputProduk(produk)
+		if err != nil {
+			return nil, err
+		}
+
+		// Menambahkan detail ke data riwayat
+		riwayat.ProdukDetail = append(riwayat.ProdukDetail, entity.RiwayatProdukCabangItemCore{
+			ProdukCabangId:      dataGudang.Id,
+			NamaProduk:          produk.NamaProduk,
+			SeratusMl:           produk.SeratusMl,
+			DuaratusMl:          produk.DuaratusMl,
+			DuaRatusLimaPuluhMl: produk.DuaRatusLimaPuluhMl,
+			Manual:              produk.Manual,
+		})
+
+		results = append(results, errInput)
 	}
 
-	dataGudang, errg := produkUC.ProdukGudangRepository.GetById(data.ProdukId)
-	if errg != nil {
-		return entity.ProdukCabangCore{}, errors.New("produk not found")
+	riwayat.TotalStok = calculateTotalStok(riwayat.ProdukDetail) // Function to calculate total stock
+	_, errRiwayat := produkUC.ProdukRepository.InputRiwayat(riwayat)
+	if errRiwayat != nil {
+		return nil, errRiwayat
 	}
 
-	data.NamaProduk = dataGudang.NamaProduk
-
-	if data.NamaProduk == "" {
-		return entity.ProdukCabangCore{}, errors.New("nama produk can't empty")
-	}
-
-	if data.HargaJual < 0 {
-		return entity.ProdukCabangCore{}, errors.New("harga produk can't less then 0")
-	}
-
-	count100 := data.SeratusMl * 100
-	count200 := data.DuaratusMl * 200
-	count250 := data.DuaRatusLimaPuluhMl * 250
-
-	countTotal := count100 + count200 + count250 + data.Manual
-
-	data.Total = countTotal
-	println(data.Total)
-	println(countTotal)
-	data.NamaProduk = dataGudang.NamaProduk
-	
-	errInput, err := produkUC.ProdukRepository.InputProduk(data)
-	if err != nil {
-		return entity.ProdukCabangCore{}, err
-	}
-
-	return errInput, nil
+	return results, nil
 }
 
 // UpdateProduk implements entity.ProdukCabangServiceInterface.
@@ -142,4 +161,22 @@ func (produkUC *produkCService) UpdateProduk(id string, data entity.ProdukCabang
 	}
 
 	return nil
+}
+
+func calculateTotalStok(items []entity.RiwayatProdukCabangItemCore) int {
+	total := 0
+	for _, item := range items {
+		total += item.SeratusMl*100 + item.DuaratusMl*200 + item.DuaRatusLimaPuluhMl*250 + item.Manual
+	}
+	return total
+}
+
+// GetAllRiwayat implements entity.ProdukCabangServiceInterface.
+func (produkUC *produkCService) GetAllRiwayat() ([]entity.RiwayatProdukCabangCore, error) {
+	riwayat, err := produkUC.ProdukRepository.GetAllRiwayat()
+	if err != nil {
+		return nil, errors.New("error get data")
+	}
+
+	return riwayat, nil
 }

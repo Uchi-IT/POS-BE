@@ -2,7 +2,6 @@ package dto
 
 type TransactionRequest struct {
 	Nama      string `json:"nama"`
-	// Parfum_id []string `json:"parfum_id"`
 	Parfum    []ParfumItemRequest  `json:"parfum"`
 }
 

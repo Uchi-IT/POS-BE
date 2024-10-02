@@ -42,12 +42,12 @@ func (produkRepo *produkCRepository) GetAllProduk(search, filter string) ([]enti
 	}
 
 	if filter == "asc" {
-        query = query.Order("nama_produk ASC")
-    } else if filter == "desc" {
-        query = query.Order("nama_produk DESC")
-    } else {
-        query = query.Order("created_at DESC")
-    }
+		query = query.Order("nama_produk ASC")
+	} else if filter == "desc" {
+		query = query.Order("nama_produk DESC")
+	} else {
+		query = query.Order("created_at DESC")
+	}
 
 	tx := query.Order("created_at DESC").Find(&dataProduk)
 	if tx.Error != nil {
@@ -106,4 +106,32 @@ func (produkRepo *produkCRepository) UpdateProduk(id string, data entity.ProdukC
 	}
 
 	return nil
+}
+
+// InputRiwayat implements entity.ProdukCabangRepositoryInterface.
+func (produkRepo *produkCRepository) InputRiwayat(data entity.RiwayatProdukCabangCore) (entity.RiwayatProdukCabangCore, error) {
+	input := entity.RiwayatCoreToRiwayatModel(data)
+
+	errRiwayat := produkRepo.db.Save(&input)
+	if errRiwayat.Error != nil {
+		return entity.RiwayatProdukCabangCore{}, errRiwayat.Error
+	}
+
+	var resp = entity.RiwayatModelToRiwayatCore(input)
+
+	return resp, nil
+}
+
+// GetAllRiwayat implements entity.ProdukCabangRepositoryInterface.
+func (produkRepo *produkCRepository) GetAllRiwayat() ([]entity.RiwayatProdukCabangCore, error) {
+	var dataHistory []model.RiwayatProdukCabang
+
+	errData := produkRepo.db.Preload("ProdukDetail").Find(&dataHistory).Error
+	if errData != nil {
+		return nil, errData
+	}
+
+	mapData := entity.ListHistoryModelToHistoryCore(dataHistory)
+
+	return mapData, nil
 }

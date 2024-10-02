@@ -22,3 +22,26 @@ type ProdukCabang struct {
 	UpdatedAt           time.Time      `gorm:"type:timestamp"`
 	DeleteAt            gorm.DeletedAt `gorm:"index"`
 }
+
+type RiwayatProdukCabang struct {
+	Id           uint `gorm:"primaryKey;autoIncrement"`
+	NamaCabang   string
+	NamaAdmin    string
+	ProdukDetail []RiwayatProdukCabangItem `gorm:"foreignKey:RiwayatId"`
+	TotalStok    int
+	Catatan      string
+	CreatedAt    time.Time      `gorm:"type:timestamp"`
+	UpdatedAt    time.Time      `gorm:"type:timestamp"`
+	DeleteAt     gorm.DeletedAt `gorm:"index"`
+}
+
+type RiwayatProdukCabangItem struct {
+	Id                  uint `gorm:"primaryKey;autoIncrement"`
+	RiwayatId           uint
+	ProdukCabangId      string
+	NamaProduk          string
+	SeratusMl           int `gorm:"default:0"`
+	DuaratusMl          int `gorm:"default:0"`
+	DuaRatusLimaPuluhMl int `gorm:"default:0"`
+	Manual              int `gorm:"default:0"`
+}

@@ -2,8 +2,10 @@ package handler
 
 import (
 	"net/http"
+	ce "uchiiParfume/features/cabang/entity"
 	"uchiiParfume/features/produkCabang/dto"
 	"uchiiParfume/features/produkCabang/entity"
+	ue "uchiiParfume/features/users/entity"
 	middleware "uchiiParfume/utils/jwt"
 
 	"github.com/google/uuid"
@@ -12,71 +14,98 @@ import (
 
 type produkCHandler struct {
 	produkCService entity.ProdukCabangServiceInterface
+	userService    ue.UsersServiceInterface
+	cabangService  ce.CabangServiceInterface
 }
 
-func NewProdukCHandler(produkC entity.ProdukCabangServiceInterface) *produkCHandler {
+func NewProdukCHandler(produkC entity.ProdukCabangServiceInterface, user ue.UsersServiceInterface, cabang ce.CabangServiceInterface) *produkCHandler {
 	return &produkCHandler{
 		produkCService: produkC,
+		userService:    user,
+		cabangService:  cabang,
 	}
 }
 
 func (handler *produkCHandler) InputProduk(e echo.Context) error {
-	_, role, err := middleware.ExtractToken(e)
-	if err != nil {
-		return e.JSON(http.StatusBadRequest, map[string]any{
-			"message": err.Error(),
-		})
-	}
+    var namaCabang string
 
-	if role != "admin" {
-		return e.JSON(http.StatusBadRequest, map[string]any{
-			"message": "access denied",
-		})
-	}
+    // Extract token and check role
+    userId, role, err := middleware.ExtractToken(e)
+    if err != nil {
+        return e.JSON(http.StatusBadRequest, map[string]any{
+            "message": err.Error(),
+        })
+    }
 
-	input := new(dto.ProdukCabangRequest)
-	errBind := e.Bind(&input)
-	if errBind != nil {
-		return e.JSON(http.StatusBadRequest, map[string]any{
-			"message": "error bind data",
-		})
-	}
+    // Only admin can access this route
+    if role != "admin" {
+        return e.JSON(http.StatusForbidden, map[string]any{
+            "message": "access denied",
+        })
+    }
 
-	data := entity.ProdukCabangCore{
-		Foto:                input.Foto,
-		HargaJual:           input.HargaJual,
-		SeratusMl:           input.SeratusMl,
-		DuaratusMl:          input.DuaratusMl,
-		DuaRatusLimaPuluhMl: input.DuaRatusLimaPuluhMl,
-		Manual:              input.Manual,
-		CabangId:            input.CabangId,
-		ProdukId:            input.ProdukId,
-	}
+    // Mengisi data nama admin dan cabang
+    userData, err := handler.userService.GetById(userId)
+    if err != nil {
+        return e.JSON(http.StatusBadRequest, map[string]any{
+            "message": "error get user data",
+        })
+    }
 
-	row, errProduk := handler.produkCService.InputProduk(data)
-	if errProduk != nil {
-		return e.JSON(http.StatusBadRequest, map[string]any{
-			"message": "error create produk",
-			"error":   errProduk.Error(),
-		})
-	}
+    // Bind the request data
+    var input dto.ProdukCabangWithNote
+    errBind := e.Bind(&input)
+    if errBind != nil {
+        return e.JSON(http.StatusBadRequest, map[string]any{
+            "message": "error bind data",
+            "error":   errBind.Error(),
+        })
+    }
 
-	resp := dto.ProdukCabangResponse{
-		Id:                  row.Id,
-		Foto:                row.Foto,
-		NamaProduk:          row.NamaProduk,
-		HargaJual:           row.HargaJual,
-		SeratusMl:           row.SeratusMl,
-		DuaratusMl:          row.DuaratusMl,
-		DuaRatusLimaPuluhMl: row.DuaRatusLimaPuluhMl,
-		Manual:              row.Manual,
-		Total:               row.Total,
-	}
+    // Prepare slice for ProdukCabangCore
+    var data []entity.ProdukCabangCore
+    for _, produk := range input.Produk {
+        data = append(data, entity.ProdukCabangCore{
+            Foto:                produk.Foto,
+            HargaJual:           produk.HargaJual,
+            SeratusMl:           produk.SeratusMl,
+            DuaratusMl:          produk.DuaratusMl,
+            Manual:              produk.Manual,
+            CabangId:            produk.CabangId,
+            ProdukId:            produk.ProdukId,
+        })
 
-	return e.JSON(http.StatusOK, map[string]any{
-		"message": "succes create produk",
-		"data":    resp,
-	})
+        // Get cabang data based on CabangId
+        cabangData, err := handler.cabangService.GetById(produk.CabangId)
+        if err != nil {
+            return e.JSON(http.StatusBadRequest, map[string]any{
+                "message": "error get cabang data",
+            })
+        }
+
+        namaCabang = cabangData.NamaCabang
+    }
+
+    // Convert riwayat request to RiwayatProdukCabang entity
+    riwayat := entity.RiwayatProdukCabangCore{
+        NamaAdmin:  userData.Nama,
+        NamaCabang: namaCabang,
+        Catatan:    input.Catatan.Catatan, // Set catatan from request
+    }
+
+    // Call the service to insert the products
+    _, errProduk := handler.produkCService.InputProduk(data, riwayat)
+    if errProduk != nil {
+        return e.JSON(http.StatusBadRequest, map[string]any{
+            "message": "error creating products",
+            "error":   errProduk.Error(),
+        })
+    }
+
+    // Return success response
+    return e.JSON(http.StatusOK, map[string]any{
+        "message": "success create products",
+    })
 }
 
 func (handler *produkCHandler) GetById(e echo.Context) error {
@@ -216,5 +245,21 @@ func (handler *produkCHandler) DeleteProduk(e echo.Context) error {
 
 	return e.JSON(http.StatusOK, map[string]interface{}{
 		"message": "produk deleted successfully",
+	})
+}
+
+func (handler *produkCHandler) GetAllRiwayat(e echo.Context) error {
+	data, err := handler.produkCService.GetAllRiwayat()
+	if err != nil {
+		return e.JSON(http.StatusBadRequest, map[string]any{
+			"message": "error get all transaction",
+		})
+	}
+
+	dataList := dto.ListTransactionCoreToListTransactionResponse(data)
+
+	return e.JSON(http.StatusOK, map[string]any{
+		"message": "get all transaction",
+		"data":    dataList,
 	})
 }
