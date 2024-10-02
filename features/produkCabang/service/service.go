@@ -108,6 +108,20 @@ func (produkUC *produkCService) InputProduk(data []entity.ProdukCabangCore, riwa
 			return nil, err
 		}
 
+		// Substract stock gudang
+		stokGudang := dataGudang.Stok - countTotal
+		if stokGudang <= 0 {
+			return nil, errors.New("stok " + dataGudang.NamaProduk + " tidak mencukupi")
+		}
+
+		dataGudang.Stok = stokGudang
+
+		//update stock gudang
+		errUpdateG := produkUC.ProdukGudangRepository.UpdateProduk(produk.ProdukId, dataGudang) 
+		if errUpdateG != nil {
+			return nil, errors.New("gagal update stok gudang")
+		}
+
 		// Menambahkan detail ke data riwayat
 		riwayat.ProdukDetail = append(riwayat.ProdukDetail, entity.RiwayatProdukCabangItemCore{
 			ProdukCabangId:      dataGudang.Id,
